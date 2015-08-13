@@ -836,6 +836,54 @@ To rather use XML to define the data the repositories shall be populated with, y
 ----
 ====
 
+[[core.web.type-safe]]
+==== QueryDSL web support
+
+For those stores which come with http://www.querydsl.com/[QueryDSL] integration it is possible to derive queries from the attributes contained in a `Request` query string.
+
+Given the `User` object from previous samples the query string
+
+[source,text]
+----
+?firstname=Dave&lastname=Matthews
+----
+
+would be resolved as 
+
+[source,text]
+----
+QUser.user.firstname.eq("Dave").and(QUser.user.lastname.eq("Matthews"))
+----
+
+The feature will be automatically enabled when Querydsl is found on the classpath.
+Adding a `@QuerydslPredicate` to the method signature will provide a ready to use `Predicate` which can be executed via the `QueryDslPredicateExecutor`.
+
+TIP: Type information is typically resolved from the methods return type. Since those information does not necessarily match the domain type it might be a good idea to use the `root` attribute of `QuerydslPredicate`. 
+
+:spring-data-querydsl-sample-source: https://raw.githubusercontent.com/spring-projects/spring-data-examples/master/web/querydsl/src/main/java/example/users/
+====
+[source,java]
+----
+include::{spring-data-querydsl-sample-source}web/UserController.java[lines=41;43..51;56..59]
+----
+====
+
+The default binding is as follows:
+
+* `Object` on simple properties as `eq`.
+* `Object` on collection like properties as `contains`.
+* `Collection` on simple properties as `in`.
+
+Those bindings can be customized via the `bindings` attribute of `@QuerydslPredicate` or by making use of Java 8 `default methods` adding the `QuerydslBinderCustomizer` to the repository interface.
+
+====
+[source,java]
+----
+include::{spring-data-querydsl-sample-source}UserRepository.java[lines=33..-1]
+----
+====
+
+
 [[web.legacy]]
 === Legacy web support
 
